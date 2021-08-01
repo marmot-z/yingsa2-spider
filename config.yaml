@@ -1,0 +1,38 @@
+# 定时任务执行时间
+cron: 0 0 10-20/1 * * * 
+
+# 用户信息
+user:
+  # 手机号码
+  phoneNum: xxxxx
+  # 登录密码
+  password: xxxxx
+
+# 关注场地和时间段
+interested:
+  # 关注的场地
+  site: 9
+  # 预定开始时间
+  startHour: 18
+  # 预定结束时间
+  endHour: 20
+
+# 自动预约配置项
+autoReserve:
+  # 自动预约策略（只预约第一个${interested.site}场地，当预约中存在为使用的场次则不触发预约动作）
+  # no: 不预约
+  # first: 预约第一个可预约的场地
+  # weekendFirst: 预约第一个可预约的周末场地（无周末场地不进行预约）
+  # workdayFirst: 预约第一个可预约的工作日场地（无工作日场地不进行预约）
+  # last: 预约最后一个可预约的场地
+  # all: 预约所有可预约的场地
+  # random: 预约任意一个可预约的场地
+  strategy: no
+
+# 推送场地信息到微信的配置项
+notifier:
+  # 推送应用token
+  appToken: AT_xxx
+  # 关注者uid数组
+  subscriberUids: 
+    - UID_xxx

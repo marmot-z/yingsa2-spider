@@ -1,0 +1,16 @@
+{
+  "name": "yingsa2-spider",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "zhangxnuwei",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.10",
+    "js-yaml": "^4.1.0",
+    "node-cron": "^3.0.0"
+  }
+}
