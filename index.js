@@ -1,9 +1,7 @@
 const Spider = require('./spider');
 const Notifier = require('./notifier');
 const Scheduler = require('./schedule');
-const Configuration = require('./config');
-
-const siteCodeOrders = ['S', 'A', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const {Configuration, VALID_SITES} = require('./config');
 
 /**
  * 获取预约信息
@@ -14,35 +12,43 @@ const siteCodeOrders = ['S', 'A', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
  * @param {Number} endHour 结束时间
  * @returns 
  */
-function findAvailableReservationTime(everyDayInfos, site = '9', startHour = 18, endHour = 20) {
+function findAvailableReservationTime(everyDayInfos, sites, startHour, endHour) {
     let expectHours = range(startHour, endHour - 1);
     let couldReservation = false;
 
     let message = '| 是否可预约 | 场地 | 时间 | 备注 |\n' +
-                   '| - | - | - | - |\n';
+                '| ---------- | ---- | ---- | ---- |\n';
     everyDayInfos.forEach(dayInfo => {
         if (dayInfo.courseInfos && dayInfo.courseInfos.length > 0) {
-            let index = siteCodeOrders.indexOf(site.toUpperCase());
+            for (let site of sites) {
+                let index = VALID_SITES.indexOf(site.toUpperCase());
 
-            let availableHours = dayInfo.courseInfos[index]
-                .filter(siteInfo => siteInfo.available)
-                .map(siteInfo => siteInfo.startHour);
+                let availableHours = dayInfo.courseInfos[index]
+                    .filter(siteInfo => siteInfo.available)
+                    .map(siteInfo => siteInfo.startHour);
 
-            if (include(expectHours, availableHours))  {
-                couldReservation = true;
-                message += `| <font color="red">是</font> | ${site} | ${dayInfo.date}${dayInfo.weekday} ${startHour}:00-${endHour}:00 |  |\n`;
-            } else {
-                message += `| 否 | ${site}|${dayInfo.date}${dayInfo.weekday} ${startHour}:00-${endHour}:00 | 当日可预约时间：${availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;
+                if (include(expectHours, availableHours))  {
+                    couldReservation = true;
+                    message += `| <font color="red">是</font> | ${site} | ${dayInfo.date}${dayInfo.weekday} ${startHour}:00-${endHour}:00 |  |\n`;
+                } else {
+                    message += `| 否 | ${site}|${dayInfo.date}${dayInfo.weekday} ${startHour}:00-${endHour}:00 | 当日可预约时间：${availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;
+                }
             }
         }
     });
 
     message = (couldReservation ? '<font color="red" size=5>有可预约的场次</font>\n' : '<font size=5>没有可预约的场次</font>\n\n') + message;
-    console.log(message);
 
     return message;
 }
 
+/**
+ * 生成一个最小值为${start}，最大值为${end}，长度为${end-start}的连续数组
+ * 
+ * @param {Number} start 开始数值(包含)
+ * @param {Number} end 结束数值(包含)
+ * @return 最小值为${start}，最大值为${end}，长度为${end-start}的连续数组
+ */
 function range(start, end) {
     return Array(end - start + 1).fill().map((_, idx) => start + idx)
 }
@@ -58,14 +64,15 @@ function include(arr, baseArr) {
     return arr.every(val => baseArr.includes(val));
 }
 
-(async () => {
+(() => {
     let config = new Configuration('./config.yaml');
     let notifier = new Notifier(config.getAppToken(), config.getSubscriberUids());
     let spider = new Spider(config.getPhoneNum(), config.getPassword()); 
     let scheduler = new Scheduler(config.getCronExpression(), () => {
         spider.fetch()
             .then(async (v) => {
-                let message = findAvailableReservationTime(v);
+                let message = findAvailableReservationTime(v, config.getInterestedSites(), 
+                                    config.getInterestedStartHour(), config.getInterestedEndHour());
                 let body = await notifier.push2Wechat(message);
             })
             .catch(console.error);

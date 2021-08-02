@@ -1,17 +1,19 @@
 # 定时任务执行时间
-cron: 0 0 10-20/1 * * * 
+cron: 0 0 10-20/1 * * *
 
 # 用户信息
 user:
   # 手机号码
-  phoneNum: xxxxx
+  phoneNum: xxx
   # 登录密码
-  password: xxxxx
+  password: xxx
 
 # 关注场地和时间段
 interested:
   # 关注的场地
-  site: 9
+  sites: 
+    - 9
+    - 8
   # 预定开始时间
   startHour: 18
   # 预定结束时间

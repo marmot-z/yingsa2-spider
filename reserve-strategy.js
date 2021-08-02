@@ -21,7 +21,7 @@ class Strategy {
      * @return 符合返回true，否则false
      */
     match(reserve) {
-        throw new Error('Unsupport operate.');
+        throw new Error('Unsupport operation.');
     }
 }
 
@@ -43,7 +43,7 @@ class WeekendFirstStrategy extends Strategy {
     index = 0;
 
     match(reserve) {
-        return !index++ && isWeekend(reserve);
+        return isWeekend(reserve) && !index++;
     }
 
     isWeekend(reserve) {
@@ -55,7 +55,7 @@ class WorkdayFirstStrategy extends Strategy {
     index = 0;
 
     match(reserve) {
-        return !index++ && isWorkday(reserve);
+        return isWorkday(reserve) && !index++;
     }
 
     isWorkday(reserve) {
@@ -92,7 +92,7 @@ class RandomStrategy extends Strategy {
     }
 }
 
-const strategyMap = {
+const STRATEGY_MAP = {
     'no': NoStrategy,
     'first': FirstStrategy,
     'weekendFirst': WeekendFirstStrategy,
@@ -113,14 +113,15 @@ function getReserveStrategy(strategyAlias) {
         throw new Error(`预约策略不能为空`);
     }
 
-    let strategies = Object.keys(strategyMap);
-    let i = strategies.find(strategy => strategy === strategyAlias);
+    let strategies = Object.keys(STRATEGY_MAP);
+    let i = strategies.findIndex(strategy => strategy === strategyAlias);
 
     if (i === -1) {
         throw new Error(`不存在 ${strategyAlias} 预约策略`);
     }
 
-    return new strategyMap[strategies[i]]();
+    return new STRATEGY_MAP[strategies[i]]();
 }
 
 module.exports.getReserveStrategy = getReserveStrategy;
+module.exports.VALID_STRATEGY_SET = Object.keys(STRATEGY_MAP);

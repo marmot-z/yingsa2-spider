@@ -16,8 +16,8 @@ class HtmlParser {
             method: 'POST',
             headers: {
                 'content-type': 'application/x-www-form-urlencoded',
-                origin: 'https://m.quyundong.com',
-                referer: 'https://m.quyundong.com/login'
+                origin: HtmlParser.host,
+                referer: HtmlParser.host + 'login'
             },
             formData: {
                 username: this.phoneNum,
