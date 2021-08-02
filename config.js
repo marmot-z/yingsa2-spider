@@ -1,10 +1,12 @@
 const yaml = require('js-yaml');
 const fs = require('fs');
+const { validate } = require('node-cron');
 
 const DEFAULT_CRON_EXPRESSION = '0 0 10-20/1 * * *';
 const DEFAULT_INTERESTED_SITE = 9;
 const DEFAULT_INTERESTED_START_HOUR = 18;
 const DEFAULT_INTERESTED_END_HOUR = 20;
+const DEFAULT_AUTO_REVERSE_STRATEGY = 'no';
 const DEFAULT_FILE_ENCODING = 'utf8';
 
 
@@ -16,6 +18,16 @@ class Configuration {
 
         let content = fs.readFileSync(filePath, DEFAULT_FILE_ENCODING);
         this.doc = yaml.load(content);
+
+        validate();
+    }
+
+    validate() {
+        // cron表达式是否合法
+        // 必填参数是否填写（phoneNum, password, appToken, subscriberUids）
+        // 场次编码是否合法
+        // 开始时间和结束时间是否合法
+        // 策略别名是否合法
     }
 
     getCronExpression() {
@@ -48,6 +60,10 @@ class Configuration {
 
     getInterestedEndHour() {
         return this.interested.endHour ? this.interested.endHour : DEFAULT_INTERESTED_END_HOUR;
+    }
+
+    getAutoReserveStrategy() {
+        return this.autoReverse.strategy ? this.autoReverse.strategy : DEFAULT_AUTO_REVERSE_STRATEGY;
     }
 
     getAppToken() {
