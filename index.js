@@ -6,6 +6,7 @@ const Configuration = require('./config');
 const siteCodeOrders = ['S', 'A', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 /**
+ * 获取预约信息
  * 
  * @param {Array} everyDayInfos 每日预定信息数组
  * @param {String} site 场地编号
