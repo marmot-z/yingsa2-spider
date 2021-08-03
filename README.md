@@ -25,9 +25,10 @@
    3. 设置目标场地(`interested.sites`)和时间段(`interested.startHour`/`interested.endHour`)
    4. 设置推送相关的应用`token`和用户`uid`（详情请看[push.md](./push.md)）
 
-5. 启动
+5. 构建 & 启动
 
    ```
+   npm install
    node ./index.js &
    ```
 

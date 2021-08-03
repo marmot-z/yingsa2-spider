@@ -65,21 +65,26 @@ function include(arr, baseArr) {
 }
 
 (() => {
-    let config = new Configuration('./config.yaml');
-    let notifier = new Notifier(config.getAppToken(), config.getSubscriberUids());
-    let spider = new Spider(config.getPhoneNum(), config.getPassword()); 
-    let scheduler = new Scheduler(config.getCronExpression(), () => {
-        spider.fetch()
-            .then(async (v) => {
-                let message = findAvailableReservationTime(v, config.getInterestedSites(), 
-                                    config.getInterestedStartHour(), config.getInterestedEndHour());
-                let body = await notifier.push2Wechat(message);
-            })
-            .catch(console.error);
-    });
+    try {
+        let config = new Configuration('./config.yaml');
+        let notifier = new Notifier(config.getAppToken(), config.getSubscriberUids());
+        let spider = new Spider(config.getPhoneNum(), config.getPassword()); 
+        let scheduler = new Scheduler(config.getCronExpression(), () => {
+            spider.fetch()
+                .then(async (v) => {
+                    let message = findAvailableReservationTime(v, config.getInterestedSites(), 
+                                        config.getInterestedStartHour(), config.getInterestedEndHour());
+                    let body = await notifier.push2Wechat(message);
+                })
+                .catch(console.error);
+        });
 
-    process.on('exit', function(code) {
-        scheduler.stop();
-    });
-    scheduler.start();
+        process.on('exit', function(code) {
+            scheduler.stop();
+        });
+        scheduler.start();
+    } catch(e) {
+        console.error(e);
+        process.exit();
+    }
 })();
