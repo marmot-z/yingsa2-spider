@@ -99,7 +99,7 @@ const STRATEGY_MAP = {
     'workdayFirst': WorkdayFirstStrategy,
     'last': LastStrategy,
     'all': AllStrategy,
-    'radom': RandomStrategy
+    'random': RandomStrategy
 };
 
 /**
