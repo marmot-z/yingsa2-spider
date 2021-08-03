@@ -2,12 +2,14 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 const cron = require('node-cron');
 const {VALID_STRATEGY_SET} = require('./reserve-strategy');
+const {VALID_CONDITION_SET} = require('./notify-condition');
 
 const DEFAULT_CRON_EXPRESSION = '0 0 10-20/1 * * *';
 const DEFAULT_INTERESTED_SITES = ['9'];
 const DEFAULT_INTERESTED_START_HOUR = 18;
 const DEFAULT_INTERESTED_END_HOUR = 20;
 const DEFAULT_AUTO_REVERSE_STRATEGY = 'no';
+const DEFAULT_NOTIFY_CONDITION = 'instock';
 const DEFAULT_FILE_ENCODING = 'utf8';
 
 
@@ -38,12 +40,12 @@ class Configuration {
             throw new Error('不合法的user.password:' + this.doc.user.password);
         }
 
-        if (!isValidAppToken(this.doc.notifier.appToken)) {
-            throw new Error('不合法的notifier.appToken:' + this.doc.notifier.appToken);
+        if (!isValidAppToken(this.doc.notify.appToken)) {
+            throw new Error('不合法的notify.appToken:' + this.doc.notify.appToken);
         }
 
-        if (!isValidSubscriberUids(this.doc.notifier.subscriberUids)) {
-            throw new Error('不合法的notifier.subscriberUids:' + this.doc.notifier.subscriberUids);
+        if (!isValidSubscriberUids(this.doc.notify.subscriberUids)) {
+            throw new Error('不合法的notify.subscriberUids:' + this.doc.notify.subscriberUids);
         }
 
         // 场次编码是否合法
@@ -67,6 +69,11 @@ class Configuration {
         // 策略别名是否合法
         if (this.doc.autoReserve.strategy && !isValidStrategy(this.doc.autoReserve.strategy)) {
             throw new Error('不合法的autoReverse.strategy:' + this.doc.autoReserve.strategy);
+        }
+
+        // 推送条件是否合法
+        if (this.doc.notify.condition && !isValidCondition(this.doc.notify.condition)) {
+            throw new Error('不合法的notify.condition:' + this.doc.notify.condition);
         }
     }
 
@@ -101,11 +108,15 @@ class Configuration {
     }
 
     getAppToken() {
-        return this.doc.notifier.appToken; 
+        return this.doc.notify.appToken; 
     }
 
     getSubscriberUids() {
-        return this.doc.notifier.subscriberUids;
+        return this.doc.notify.subscriberUids;
+    }
+
+    getNotifyCondition() {
+        return this.doc.notify.condition ? this.doc.notify.condition.toLowerCase() : DEFAULT_NOTIFY_CONDITION;
     }
 }
 
@@ -140,6 +151,12 @@ function isValidHour(hour) {
 function isValidStrategy(strategy) {
     return strategy && typeof strategy === 'string' ? 
             VALID_STRATEGY_SET.find(s => s === strategy.toLowerCase()) :
+            false;
+}
+
+function isValidCondition(condition) {
+    return condition && typeof condition === 'string' ?
+            VALID_CONDITION_SET.find(c => c === condition.toLowerCase()) :
             false;
 }
 

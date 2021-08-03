@@ -1,10 +1,10 @@
 # 定时任务执行时间
-cron: 0 0 10-20/1 * * *
+cron: 0 0 0/1 * * *
 
 # 用户信息
 user:
   # 手机号码
-  phoneNum: xxx
+  phoneNum: 1xxx
   # 登录密码
   password: xxx
 
@@ -17,7 +17,7 @@ interested:
   # 预定开始时间
   startHour: 18
   # 预定结束时间
-  endHour: 20
+  endHour: 22
 
 # 自动预约配置项
 autoReserve:
@@ -32,7 +32,11 @@ autoReserve:
   strategy: no
 
 # 推送场地信息到微信的配置项
-notifier:
+notify:
+  # 推送条件
+  # always: 总是
+  # instock: 可预定
+  condition: instock
   # 推送应用token
   appToken: AT_xxx
   # 关注者uid数组

@@ -7,39 +7,46 @@ const {Configuration, VALID_SITES} = require('./config');
  * 获取预约信息
  * 
  * @param {Array} everyDayInfos 每日预定信息数组
- * @param {String} site 场地编号
+ * @param {Array} sites 场地编号
  * @param {Number} startHour 开始时间
  * @param {Number} endHour 结束时间
  * @returns 
  */
 function findAvailableReservationTime(everyDayInfos, sites, startHour, endHour) {
     let expectHours = range(startHour, endHour - 1);
-    let couldReservation = false;
+    let result = {'instock': [], 'outstock': []};
 
-    let message = '| 是否可预约 | 场地 | 时间 | 备注 |\n' +
-                '| ---------- | ---- | ---- | ---- |\n';
     everyDayInfos.forEach(dayInfo => {
         if (dayInfo.courseInfos && dayInfo.courseInfos.length > 0) {
             for (let site of sites) {
                 let index = VALID_SITES.indexOf(site.toUpperCase());
 
-                let availableHours = dayInfo.courseInfos[index]
-                    .filter(siteInfo => siteInfo.available)
-                    .map(siteInfo => siteInfo.startHour);
+                let availableCourses = dayInfo.courseInfos[index].filter(siteInfo => siteInfo.available);
+                let availableHours =  availableCourses.map(course => course.startHour);
+                let stockInfo = {
+                    site: site,
+                    date: dayInfo.date,
+                    weekday: dayInfo.weekday,
+                    startHour: startHour,
+                    endHour: endHour,
+                    availableHours: availableHours
+                };
 
-                if (include(expectHours, availableHours))  {
-                    couldReservation = true;
-                    message += `| <font color="red">是</font> | ${site} | ${dayInfo.date}${dayInfo.weekday} ${startHour}:00-${endHour}:00 |  |\n`;
+                if (include(expectHours, availableHours)) {
+                    let totalFee = availableCourses.filter(course => course.startHour >= startHour && course.endHour <= endHour)
+                                    .map(course => course.fee)
+                                    .reduce((fee, currentFee) => fee + currentFee);
+                    stockInfo.fee = totalFee;
+
+                    result.instock.push(stockInfo);
                 } else {
-                    message += `| 否 | ${site}|${dayInfo.date}${dayInfo.weekday} ${startHour}:00-${endHour}:00 | 当日可预约时间：${availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;
+                    result.outstock.push(stockInfo);
                 }
             }
         }
     });
 
-    message = (couldReservation ? '<font color="red" size=5>有可预约的场次</font>\n' : '<font size=5>没有可预约的场次</font>\n\n') + message;
-
-    return message;
+    return result;
 }
 
 /**
@@ -67,14 +74,14 @@ function include(arr, baseArr) {
 (() => {
     try {
         let config = new Configuration('./config.yaml');
-        let notifier = new Notifier(config.getAppToken(), config.getSubscriberUids());
+        let notifier = new Notifier(config.getAppToken(), config.getSubscriberUids(), config.getNotifyCondition());
         let spider = new Spider(config.getPhoneNum(), config.getPassword()); 
         let scheduler = new Scheduler(config.getCronExpression(), () => {
             spider.fetch()
                 .then(async (v) => {
-                    let message = findAvailableReservationTime(v, config.getInterestedSites(), 
+                    let result = findAvailableReservationTime(v, config.getInterestedSites(), 
                                         config.getInterestedStartHour(), config.getInterestedEndHour());
-                    let body = await notifier.push2Wechat(message);
+                    let body = await notifier.push2Wechat(result);
                 })
                 .catch(console.error);
         });

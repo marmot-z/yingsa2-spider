@@ -2,20 +2,21 @@
 
 ### 部署
 
-1. 下载代码
-	```shell
-   git clone https://github.com/marmot-z/yingsa2-spider.git
-   cd yingsa2-spider/
-   ```
-
 2. 安装nodejs
 
-   前往[nodejs](https://nodejs.org/en/download/)官网下载对应版本的`nodejs`
+   前往[nodejs](https://nodejs.org/en/download/)官网下载对应最新稳定版本的`nodejs`
 
 3. 设置npm镜像
 
    ```
    npm config set registry https://registry.npm.taobao.org
+   ```
+
+4. 下载代码
+
+   ```
+   git clone https://github.com/marmot-z/yingsa2-spider.git
+   cd yingsa2-spider/
    ```
 
 4. 配置文件
