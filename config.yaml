@@ -36,6 +36,7 @@ notify:
   # 推送条件
   # always: 总是
   # instock: 可预定
+  # never: 从不
   condition: instock
   # 推送应用token
   appToken: AT_xxx

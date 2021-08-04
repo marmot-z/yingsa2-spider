@@ -2,6 +2,7 @@ const Spider = require('./spider');
 const Notifier = require('./notifier');
 const Scheduler = require('./schedule');
 const {Configuration, VALID_SITES} = require('./config');
+const Reserver = require('./reserve');
 
 /**
  * 获取预约信息
@@ -24,19 +25,26 @@ function findAvailableReservationTime(everyDayInfos, sites, startHour, endHour) 
                 let availableCourses = dayInfo.courseInfos[index].filter(siteInfo => siteInfo.available);
                 let availableHours =  availableCourses.map(course => course.startHour);
                 let stockInfo = {
+                    url: dayInfo.url,
+                    token: dayInfo.token,
+                    bookDate: dayInfo.bookDate,
                     site: site,
                     date: dayInfo.date,
                     weekday: dayInfo.weekday,
-                    startHour: startHour,
-                    endHour: endHour,
                     availableHours: availableHours
                 };
 
                 if (include(expectHours, availableHours)) {
-                    let totalFee = availableCourses.filter(course => course.startHour >= startHour && course.endHour <= endHour)
-                                    .map(course => course.fee)
-                                    .reduce((fee, currentFee) => fee + currentFee);
-                    stockInfo.fee = totalFee;
+                    let sessiones = availableCourses.filter(course => course.startHour >= startHour && course.endHour <= endHour)
+                                    .map(course => {
+                                        return {
+                                            fee: course.fee,
+                                            goodsId: course.goodsId,
+                                            startHour: course.startHour,
+                                            endHour: course.endHour
+                                        };
+                                    });
+                    stockInfo.sessiones = sessiones;
 
                     result.instock.push(stockInfo);
                 } else {
@@ -76,12 +84,17 @@ function include(arr, baseArr) {
         let config = new Configuration('./config.yaml');
         let notifier = new Notifier(config.getAppToken(), config.getSubscriberUids(), config.getNotifyCondition());
         let spider = new Spider(config.getPhoneNum(), config.getPassword()); 
+        let reserver = new Reserver();
         let scheduler = new Scheduler(config.getCronExpression(), () => {
             spider.fetch()
                 .then(async (v) => {
                     let result = findAvailableReservationTime(v, config.getInterestedSites(), 
                                         config.getInterestedStartHour(), config.getInterestedEndHour());
-                    let body = await notifier.push2Wechat(result);
+                    notifier.pushCourses2Wechat(result);
+
+                    reserver.setLoginCookie(spider.getLoginCookie());
+                    let reserveResult = await reserver.placeOrder(config.getAutoReserveStrategy(), result.instock);
+                    notifier.pushReserveResult2Wechat(reserveResult);
                 })
                 .catch(console.error);
         });

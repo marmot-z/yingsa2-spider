@@ -28,7 +28,7 @@ class HtmlParser {
         return new Promise((resolve, reject) => {
             request(options, (err, response) => {
                 if (err || response.statusCode != 200) {
-                    reject(err || response);
+                    reject(err ? err : response);
                     return;
                 }
 
@@ -57,7 +57,10 @@ class HtmlParser {
 
         for (let page of detailPages) {
             if (page.url !== null) {
-                page.courseInfos = await this.loadDetailHtml(page.url);
+                let info = await this.loadDetailHtml(page.url);
+                page.courseInfos = info.courseInfos;
+                page.token = info.token;
+                page.bookDate = info.bookDate;
             }
         }
 
@@ -109,22 +112,37 @@ class HtmlParser {
     parseDetailHtml(html) {
         let $ = cheerio.load(html);
         let $bookList = $('#scroller > div');
+        let bookDate = $('#book_date').val();
+        let token = $('#modalContent > form > div > input[type=hidden]:nth-child(11)').val();
 
-        return $bookList.children('ul').toArray().map(ul => {
+        let courseInfos = $bookList.children('ul').toArray().map(ul => {
             return $(ul).children('li').toArray().map(li => {
                 let $li = $(li);
+                let goodsId = $li.attr('goodsid');
                 let [_, siteCode, fee, startHour, endHour] = 
                         /(\w)[^,]{2},\w{1,2},(\d{1,3}),(\d{1,2}):00-(\d{1,2}):00/.exec($li.attr('course_content'));
 
                 return {
                     siteCode: siteCode,
+                    goodsId: goodsId,
                     fee: Number.parseInt(fee),
                     startHour: Number.parseInt(startHour),
                     endHour: Number.parseInt(endHour),
-                    available: $li.hasClass('available')
+                    available: $li.hasClass('available'),
+                    token: token
                 }
             });
         });
+
+        return {
+            courseInfos: courseInfos,
+            token: token,
+            bookDate: bookDate
+        };
+    }
+
+    getLoginCookie() {
+        return this.loginCookie;
     }
 }
 

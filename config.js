@@ -8,7 +8,7 @@ const DEFAULT_CRON_EXPRESSION = '0 0 10-20/1 * * *';
 const DEFAULT_INTERESTED_SITES = ['9'];
 const DEFAULT_INTERESTED_START_HOUR = 18;
 const DEFAULT_INTERESTED_END_HOUR = 20;
-const DEFAULT_AUTO_REVERSE_STRATEGY = 'no';
+const DEFAULT_AUTO_RESERVE_STRATEGY = 'no';
 const DEFAULT_NOTIFY_CONDITION = 'instock';
 const DEFAULT_FILE_ENCODING = 'utf8';
 
@@ -104,7 +104,7 @@ class Configuration {
     }
 
     getAutoReserveStrategy() {
-        return this.doc.autoReverse.strategy ? this.doc.autoReverse.strategy : DEFAULT_AUTO_REVERSE_STRATEGY;
+        return this.doc.autoReserve.strategy ? this.doc.autoReserve.strategy : DEFAULT_AUTO_RESERVE_STRATEGY;
     }
 
     getAppToken() {

@@ -14,11 +14,24 @@ class Notifier {
         return this.subscriberUids;
     }
 
-    push2Wechat(info) {
+    pushCourses2Wechat(info) {
         if (!this.condition.matchCondition(info)) {
             return;
         }
 
+        let s = convert2Markdown(info);
+        this.push2Wechat(s);
+    }
+
+    pushReserveResult2Wechat(result) {
+        if (!Array.isArray(result) || result.length === 0) {
+            return;
+        }
+        
+        this.push2Wechat(result.join('\n'));
+    }
+
+    push2Wechat(s) {
         let options = {
             url: WECHAT_PUSH_URL,
             method: 'POST',
@@ -27,7 +40,7 @@ class Notifier {
             },
             body: JSON.stringify({
                 'appToken': this.appToken,
-                'content': convert2Markdown(info),
+                'content': s,
                 'summary': '英飒英飒预约信息推送',
                 'contentType': 3,
                 'uids': this.getSubscriberIds()
@@ -60,11 +73,11 @@ function convert2Markdown(info) {
 
     let buffer = '';
     for (let stock of info.instock) {
-        buffer += `| <font color="red">是</font> | ${stock.site} | ${stock.date}${stock.weekday} ${stock.startHour}:00-${stock.endHour}:00 | ${stock.fee} |  |\n`;
+        buffer += `| <font color="red">是</font> | ${stock.site} | ${stock.date}${stock.weekday} ${stock.sessiones.map(session => session.startHour + ':00-' + session.endHour + ':00').join(',')} | ${stock.sessiones.map(session => session.fee).join(',')} | - |\n`;
     }
 
     for (let stock of info.outstock) {
-        buffer += `| 否 | ${stock.site} | ${stock.date}${stock.weekday} ${stock.startHour}:00-${stock.endHour}:00 | - | 当日可预约时间：${stock.availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;   
+        buffer += `| 否 | ${stock.site} | - | - | 当日可预约时间：${stock.availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;   
     }
 
     let tips = info.instock.length > 0 ? '<font color="red" size=5>有可预约的场次</font>\n\n' : '<font size=5>没有可预约的场次</font>\n\n'

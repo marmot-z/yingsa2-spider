@@ -16,6 +16,12 @@ class InstockCondition extends Condition {
     }
 }
 
+class NeverCondition extends Condition {
+    matchCondition(info) {
+        return false;
+    }
+}
+
 function getCondition(condition) {
     let conditionClazz = CONDITION_MAP[condition];
     
@@ -28,7 +34,8 @@ function getCondition(condition) {
 
 const CONDITION_MAP = {
     'always': AlwaysCondition,
-    'instock': InstockCondition
+    'instock': InstockCondition,
+    'never': NeverCondition
 };
 
 module.exports.getCondition = getCondition;
