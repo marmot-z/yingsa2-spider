@@ -77,7 +77,7 @@ function convert2Markdown(info) {
     }
 
     for (let stock of info.outstock) {
-        buffer += `| 否 | ${stock.site} | - | - | 当日可预约时间：${stock.availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;   
+        buffer += `| 否 | ${stock.site} | ${stock.date}${stock.weekday} | - | 当日可预约时间：${stock.availableHours.map(h => `${h}:00-${h+1}:00`).join(',')} |\n`;   
     }
 
     let tips = info.instock.length > 0 ? '<font color="red" size=5>有可预约的场次</font>\n\n' : '<font size=5>没有可预约的场次</font>\n\n'

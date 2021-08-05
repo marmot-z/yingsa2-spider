@@ -1,3 +1,5 @@
+const DateUtils = require('./date-util');
+
 class Strategy {
 
     /**
@@ -47,7 +49,7 @@ class WeekendFirstStrategy extends Strategy {
     }
 
     isWeekend(reservation) {
-        return false;
+        return DateUtils.isWeekend(DateUtils.today());
     }
 }
 
@@ -59,7 +61,7 @@ class WorkdayFirstStrategy extends Strategy {
     }
 
     isWorkday(reservation) {
-        return false;
+        return DateUtils.isWorkday(DateUtils.today());
     }
 }
 

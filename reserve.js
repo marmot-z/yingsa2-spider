@@ -8,8 +8,11 @@ const ORDER_URL = 'https://m.quyundong.com/myorder/orderList?action=order_get_or
 
 class Reserver {
     async placeOrder(strategyAlias, reservationes) {
-        let reserveable = await this.couldReserve();
+        if (!Array.isArray(reservationes) || reservationes.length == 0) {
+            return [];
+        }
 
+        let reserveable = await this.couldReserve();
         if (!reserveable) {
             console.info('当前账户下有未消费/未支付的订单，暂不进行自动预约');
             return [];
@@ -23,13 +26,12 @@ class Reserver {
             let reserveMessage = await this.doPlaceOrder(reservation);
             reservaeResult.push(reserveMessage);
         }
+        console.log('预约结果：\n' + reservaeResult.join('\n'));
 
         return reservaeResult;
     }
 
     async couldReserve() {
-        // 别跟我说代码风格、函数复用，老夫写代码就是梭的干
-        // ctrl + c， ctrl + v半小时搞定
         let options = {
             url: ORDER_URL.replace('%s', new Date().getTime()),
             method: 'GET',
@@ -68,12 +70,14 @@ class Reserver {
 
     async doPlaceOrder(reservation) {
         try {
-            // 1.调用订单确认接口（此处必须重新获取详情页的token，否则接口会提示过期）
+            // 1.获取详情页token(此处必须重新获取详情页的token，否则接口会提示过期)
             reservation.token = await this.getDetailPageToken(reservation.url);
+
+            // 2.调用订单确认接口
             let confirmPageUrl = this.createConfirmPageUrl(reservation);
             let confirmPageInfo = await this.getConfirmPageInfo(confirmPageUrl);
 
-            // 2.调用订单下单接口(code为1成功，其他失败)
+            // 3.调用订单下单接口(code为1成功，其他失败)
             let result = await this.doConfirm(confirmPageInfo);
             return `预定 ${reservation.date}${reservation.weekday} ${reservation.site}场地 ${reservation.sessiones.map(s => s.startHour + ':00-' + s.endHour + ':00').join(',')} 时间段<font color='red' size=5>成功</font>，订单${result.data['order_no']}在10分钟内有效，请尽快付款`;
         } catch(e) {
