@@ -1,13 +1,13 @@
 const request = require('request');
 const cheerio = require('cheerio');
-const {getReserveStrategy} = require('./reserve-strategy');
+const {StrategyChain} = require('./reserve-strategy');
 
 const CONFIRM_URL = 'https://m.quyundong.com/order/Confirm';
 const DO_CONFIRM_URL = 'https://m.quyundong.com/order/doconfirm';
 const ORDER_URL = 'https://m.quyundong.com/myorder/orderList?action=order_get_order_list&page=1&client_time=%s&type=0';
 
 class Reserver {
-    async placeOrder(strategyAlias, reservationes) {
+    async placeOrder(strategiesAlias, reservationes) {
         if (!Array.isArray(reservationes) || reservationes.length == 0) {
             return [];
         }
@@ -18,8 +18,8 @@ class Reserver {
             return [];
         }
 
-        let strategy = getReserveStrategy(strategyAlias);
-        let totalReservationes = strategy.determineMatchReservationes(reservationes);
+        let strategyChain = new StrategyChain(strategiesAlias);
+        let totalReservationes = strategyChain.determineMatchReservationes(reservationes);
 
         let reservaeResult = [];
         for (let reservation of totalReservationes) {

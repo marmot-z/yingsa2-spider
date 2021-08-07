@@ -4,11 +4,10 @@ const cron = require('node-cron');
 const {VALID_STRATEGY_SET} = require('./reserve-strategy');
 const {VALID_CONDITION_SET} = require('./notify-condition');
 
-const DEFAULT_CRON_EXPRESSION = '0 0 10-20/1 * * *';
+const DEFAULT_CRON_EXPRESSION = '0 0 1-2/1 * * *';
 const DEFAULT_INTERESTED_SITES = ['9'];
 const DEFAULT_INTERESTED_START_HOUR = 18;
 const DEFAULT_INTERESTED_END_HOUR = 20;
-const DEFAULT_AUTO_RESERVE_STRATEGY = 'no';
 const DEFAULT_NOTIFY_CONDITION = 'instock';
 const DEFAULT_FILE_ENCODING = 'utf8';
 
@@ -44,8 +43,8 @@ class Configuration {
             throw new Error('不合法的notify.appToken:' + this.doc.notify.appToken);
         }
 
-        if (!isValidSubscriberUids(this.doc.notify.subscriberUids)) {
-            throw new Error('不合法的notify.subscriberUids:' + this.doc.notify.subscriberUids);
+        if (!isValidSubscriberUid(this.doc.notify.subscriberUid)) {
+            throw new Error('不合法的notify.subscriberUid:' + this.doc.notify.subscriberUid);
         }
 
         // 场次编码是否合法
@@ -67,8 +66,8 @@ class Configuration {
         }
 
         // 策略别名是否合法
-        if (this.doc.autoReserve.strategy && !isValidStrategy(this.doc.autoReserve.strategy)) {
-            throw new Error('不合法的autoReverse.strategy:' + this.doc.autoReserve.strategy);
+        if (!isValidStrategies(this.doc.autoReserve.strategies)) {
+            throw new Error('不合法的autoReverse.strategies:' + this.doc.autoReserve.strategies);
         }
 
         // 推送条件是否合法
@@ -103,8 +102,8 @@ class Configuration {
         return this.doc.interested.endHour ? this.doc.interested.endHour : DEFAULT_INTERESTED_END_HOUR;
     }
 
-    getAutoReserveStrategy() {
-        return this.doc.autoReserve.strategy ? this.doc.autoReserve.strategy : DEFAULT_AUTO_RESERVE_STRATEGY;
+    getAutoReserveStrategies() {
+        return this.doc.autoReserve.strategies;
     }
 
     getAppToken() {
@@ -112,7 +111,7 @@ class Configuration {
     }
 
     getSubscriberUids() {
-        return this.doc.notify.subscriberUids;
+        return [this.doc.notify.subscriberUid];
     }
 
     getNotifyCondition() {
@@ -128,9 +127,9 @@ function isValidAppToken(appToken) {
     return appToken ? appToken.startsWith('AT_') : false;
 }
 
-function isValidSubscriberUids(subscriberUids) {
-    return Array.isArray(subscriberUids) ? 
-            subscriberUids.every(uid => uid && uid.startsWith('UID_')) : 
+function isValidSubscriberUid(subscriberUids) {
+    return subscriberUids && typeof subscriberUids === 'string' ? 
+            subscriberUids.startsWith('UID_') : 
             false;
 }
 
@@ -148,9 +147,9 @@ function isValidHour(hour) {
             false;
 }
 
-function isValidStrategy(strategy) {
-    return strategy && typeof strategy === 'string' ? 
-            VALID_STRATEGY_SET.find(s => s === strategy.toLowerCase()) :
+function isValidStrategies(strategies) {
+    return Array.isArray(strategies) && strategies.length > 0 ? 
+            strategies.every(strategy => VALID_STRATEGY_SET.find(s => s === strategy)) :
             false;
 }
 

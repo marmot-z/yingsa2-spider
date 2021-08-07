@@ -93,7 +93,7 @@ function include(arr, baseArr) {
                     notifier.pushCourses2Wechat(result);
 
                     reserver.setLoginCookie(spider.getLoginCookie());
-                    let reserveResult = await reserver.placeOrder(config.getAutoReserveStrategy(), result.instock);
+                    let reserveResult = await reserver.placeOrder(config.getAutoReserveStrategies(), result.instock);
                     notifier.pushReserveResult2Wechat(reserveResult);
                 })
                 .catch(console.error);

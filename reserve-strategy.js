@@ -45,11 +45,11 @@ class WeekendFirstStrategy extends Strategy {
     index = 0;
 
     match(reservation) {
-        return isWeekend(reservation) && !this.index++;
+        return this.isWeekend(reservation) && !this.index++;
     }
 
     isWeekend(reservation) {
-        return DateUtils.isWeekend(DateUtils.today());
+        return DateUtils.isWeekend(new Date(reservation.bookDate * 1000));
     }
 }
 
@@ -57,11 +57,11 @@ class WorkdayFirstStrategy extends Strategy {
     index = 0;
 
     match(reservation) {
-        return isWorkday(reservation) && !this.index++;
+        return this.isWorkday(reservation) && !this.index++;
     }
 
     isWorkday(reservation) {
-        return DateUtils.isWorkday(DateUtils.today());
+        return DateUtils.isWorkday(new Date(reservation.bookDate * 1000));
     }
 }
 
@@ -94,6 +94,76 @@ class RandomStrategy extends Strategy {
     }
 }
 
+class WeekStrategy extends Strategy {
+    getDayIndex() {
+        return -1;
+    }
+
+    match(reservation) {
+        let date =  new Date(reservation.bookDate * 1000);
+        return date.getDay() === this.getDayIndex(); 
+    }
+}
+
+class MondayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 1;
+    }
+}
+
+class TuesdayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 2;
+    }
+}
+
+class WednesdayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 3;
+    }
+}
+
+class ThursdayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 4;
+    }
+}
+
+class FridayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 5;
+    }
+}
+
+class SaturdayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 6;
+    }
+}
+
+class SundayStrategy extends WeekStrategy {
+    getDayIndex() {
+        return 0;
+    }
+}
+
+class StrategyChain {
+    constructor(strategiesAlias) {
+        this.strategies = strategiesAlias.map(getReserveStrategy);
+    }
+
+    determineMatchReservationes(reservationes) {
+        let result = [];
+
+        this.strategies.forEach(strategy => {
+            let totalReservationes = strategy.determineMatchReservationes(reservationes);
+            result.push(...totalReservationes);
+        });
+        
+        return distinct(result);
+    }
+}
+
 const STRATEGY_MAP = {
     'no': NoStrategy,
     'first': FirstStrategy,
@@ -101,7 +171,14 @@ const STRATEGY_MAP = {
     'workdayFirst': WorkdayFirstStrategy,
     'last': LastStrategy,
     'all': AllStrategy,
-    'random': RandomStrategy
+    'random': RandomStrategy,
+    'monday': MondayStrategy,
+    'tuesday': TuesdayStrategy,
+    'wednesday': WednesdayStrategy,
+    'thursday': ThursdayStrategy,
+    'friday': FridayStrategy,
+    'saturday': SaturdayStrategy,
+    'sunday': SundayStrategy
 };
 
 /**
@@ -125,5 +202,20 @@ function getReserveStrategy(strategyAlias) {
     return new STRATEGY_MAP[strategies[i]]();
 }
 
-module.exports.getReserveStrategy = getReserveStrategy;
+function distinct(arr) {
+    let result = [];
+    let map = new Map();
+
+    for (let item of arr) {
+        let uniqueKey = item.site + item.date;
+        if (!map.get(uniqueKey)) {
+            result.push(item); 
+            map.set(uniqueKey, true);
+        }
+    }
+
+    return result;
+}
+
+module.exports.StrategyChain = StrategyChain;
 module.exports.VALID_STRATEGY_SET = Object.keys(STRATEGY_MAP);

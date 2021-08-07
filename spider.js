@@ -130,7 +130,7 @@ class HtmlParser {
                     endHour: Number.parseInt(endHour),
                     available: $li.hasClass('available'),
                     token: token
-                }
+                };
             });
         });
 

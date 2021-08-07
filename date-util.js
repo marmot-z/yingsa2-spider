@@ -3,6 +3,11 @@ class DateUtils {
         return new Date();
     }
 
+    static getDay(date) {
+        // 08月1日
+        // 判断是否为第二年
+    }
+
     static isWeekend(date) {
         if (!date | !(date instanceof Date)) {
             throw new Error('非法的日期:' + date);
