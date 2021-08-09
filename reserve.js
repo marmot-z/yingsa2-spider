@@ -12,11 +12,11 @@ class Reserver {
             return [];
         }
 
-        let reserveable = await this.couldReserve();
-        if (!reserveable) {
-            console.info('当前账户下有未消费/未支付的订单，暂不进行自动预约');
-            return [];
-        }
+        // let reserveable = await this.couldReserve();
+        // if (!reserveable) {
+        //     console.info('当前账户下有未消费/未支付的订单，暂不进行自动预约');
+        //     return [];
+        // }
 
         let strategyChain = new StrategyChain(strategiesAlias);
         let totalReservationes = strategyChain.determineMatchReservationes(reservationes);
