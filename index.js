@@ -86,6 +86,8 @@ function include(arr, baseArr) {
         let spider = new Spider(config.getPhoneNum(), config.getPassword()); 
         let reserver = new Reserver();
         let scheduler = new Scheduler(config.getCronExpression(), () => {
+            console.info(new Date(), '定时任务调用开始');
+
             spider.fetch()
                 .then(async (v) => {
                     let result = findAvailableReservationTime(v, config.getInterestedSites(), 
@@ -103,6 +105,12 @@ function include(arr, baseArr) {
             scheduler.stop();
         });
         scheduler.start();
+
+        console.info(new Date(), `您将预定的场次为：${config.getInterestedSites().join(',')}，
+                                  时间为：[${config.getInterestedStartHour()}-${config.getInterestedEndHour()}]，
+                                  预约策略为：${config.getAutoReserveStrategies()}，
+                                  推送策略为：${config.getNotifyCondition()}`);
+        console.info(new Date(), 'yingsa2-spider 启动成功');
     } catch(e) {
         console.error(e);
         process.exit();

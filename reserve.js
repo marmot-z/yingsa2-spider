@@ -26,7 +26,7 @@ class Reserver {
             let reserveMessage = await this.doPlaceOrder(reservation);
             reservaeResult.push(reserveMessage);
         }
-        console.log('预约结果：\n' + reservaeResult.join('\n'));
+        console.log(new Date(), `预约结果：\n${reservaeResult.length === 0 ? '没有可预约的场次' : reservaeResult.join('\n')}`);
 
         return reservaeResult;
     }
@@ -81,8 +81,7 @@ class Reserver {
             let result = await this.doConfirm(confirmPageInfo);
             return `预定 ${reservation.date}${reservation.weekday} ${reservation.site}场地 ${reservation.sessiones.map(s => s.startHour + ':00-' + s.endHour + ':00').join(',')} 时间段<font color='red' size=5>成功</font>，订单${result.data['order_no']}在10分钟内有效，请尽快付款`;
         } catch(e) {
-            console.error(e);
-            return `预定 ${reservation.date}${reservation.weekday} ${reservation.site}场地 ${reservation.sessiones.map(s => s.startHour + ':00-' + s.endHour + ':00').join(',')} 时间段<font color='red' size=5>失败</font>，原因为：${e}`;
+            return `预定 ${reservation.date}${reservation.weekday} ${reservation.site}场地 ${reservation.sessiones.map(s => s.startHour + ':00-' + s.endHour + ':00').join(',')} 时间段<font color='red' size=5>失败</font>，原因为：${e instanceof Error ? e.stack : JSON.stringify(e)}`;
         }
     }
 
