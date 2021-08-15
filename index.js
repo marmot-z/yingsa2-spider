@@ -113,6 +113,12 @@ function include(arr, baseArr) {
         console.info(new Date(), 'yingsa2-spider 启动成功');
     } catch(e) {
         console.error(e);
-        process.exit();
+        process.exit(99);
     }
+
+    process.on('uncaughtException', function(e) {
+        console.info('未捕获异常导致的程序终止');
+        console.error(e);
+        process.exit(99);
+    });
 })();
